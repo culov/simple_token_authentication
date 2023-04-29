@@ -91,6 +91,7 @@ module SimpleTokenAuthentication
       #
       # Returns nothing.
       def handle_token_authentication_for(model, options = {})
+        puts "handle_token_authentication_for:::: options #{options.inspect}"
         model_alias = options[:as] || options['as']
         entity = entities_manager.find_or_create_entity(model, model_alias)
         options = SimpleTokenAuthentication.parse_options(options)
