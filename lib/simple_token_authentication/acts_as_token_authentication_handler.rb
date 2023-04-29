@@ -11,7 +11,6 @@ module SimpleTokenAuthentication
 
     def acts_as_token_authentication_handler_for(model, options = {})
       include SimpleTokenAuthentication::TokenAuthenticationHandler
-      puts "acts_as_token_authentication_handler_for::: #{options.inspect}"
       handle_token_authentication_for(model, options)
     end
 
