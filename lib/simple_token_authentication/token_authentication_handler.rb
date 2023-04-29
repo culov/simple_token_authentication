@@ -29,7 +29,9 @@ module SimpleTokenAuthentication
 
     def authenticate_entity_from_token!(entity)
       # puts "authenticate_entity_from_token: #{entity.inspect}"
-      record = find_record_from_identifier(entity)
+      token = entity.get_token_from_params_or_headers(self)
+      puts "da token: #{token}"
+      record = find_record_from_identifier(entity, token)
       puts "record: #{record.inspect}, entity: #{entity.inspect}, token_comparator: #{token_comparator.inspect}"
       if token_correct?(record, entity, token_comparator)
         perform_sign_in!(record, sign_in_handler)
@@ -56,7 +58,7 @@ module SimpleTokenAuthentication
       sign_in_handler.sign_in self, record, store: SimpleTokenAuthentication.sign_in_token
     end
 
-    def find_record_from_identifier(entity)
+    def find_record_from_identifier(entity, token)
       identifier_param_value = entity.get_identifier_from_params_or_headers(self).presence
       puts "identifier_param_value: #{identifier_param_value.inspect}"
 
@@ -65,7 +67,7 @@ module SimpleTokenAuthentication
 
       # The finder method should be compatible with all the model adapters,
       # namely ActiveRecord and Mongoid in all their supported versions.
-      identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value)
+      identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value, authentication_token => token)
     end
 
     # Private: Take benefit from Devise case-insensitive keys
