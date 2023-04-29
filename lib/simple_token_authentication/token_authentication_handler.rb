@@ -28,8 +28,9 @@ module SimpleTokenAuthentication
     end
 
     def authenticate_entity_from_token!(entity)
+      puts "authenticate_entity_from_token: #{entity.inspect}"
       record = find_record_from_identifier(entity)
-
+      puts "record: #{record.inspect}, entity: #{entity.inspect}, token_comparator: #{token_comparator.inspect}"
       if token_correct?(record, entity, token_comparator)
         perform_sign_in!(record, sign_in_handler)
         after_successful_token_authentication if respond_to?(:after_successful_token_authentication, true)
@@ -97,6 +98,7 @@ module SimpleTokenAuthentication
         entity = entities_manager.find_or_create_entity(model, model_alias)
         puts "entity: #{entity.inspect}, options: #{options.inspect}"
         options = SimpleTokenAuthentication.parse_options(options)
+        puts "new options: #{options.inspect}"
         define_token_authentication_helpers_for(entity, fallback_handler(options))
         set_token_authentication_hooks(entity, options)
       end
@@ -127,6 +129,9 @@ module SimpleTokenAuthentication
 
         method_name = "authenticate_#{entity.name_underscore}_from_token"
         method_name_bang = method_name + '!'
+
+        puts "method_name: #{method_name.inspect}"
+        puts "method_name_bang: #{method_name_bang.inspect}"
 
         class_eval do
           define_method method_name.to_sym do
