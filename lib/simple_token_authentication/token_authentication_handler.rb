@@ -69,8 +69,7 @@ module SimpleTokenAuthentication
       # namely ActiveRecord and Mongoid in all their supported versions.
       puts "entity.identifier: #{entity.identifier.inspect}"
       puts "identifier_param_value: #{identifier_param_value.inspect}"
-      puts "entity.model.find_for_authentication: #{entity.model.find_for_authentication.inspect}"
-      identifier_param_value && entity.model.find_for_authentication({entity.identifier => identifier_param_value, :authentication_token => token})
+      identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value, :authentication_token => token)
     end
 
     # Private: Take benefit from Devise case-insensitive keys
