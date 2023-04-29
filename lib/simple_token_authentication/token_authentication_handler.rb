@@ -58,8 +58,10 @@ module SimpleTokenAuthentication
 
     def find_record_from_identifier(entity)
       identifier_param_value = entity.get_identifier_from_params_or_headers(self).presence
+      puts "identifier_param_value: #{identifier_param_value.inspect}"
 
       identifier_param_value = integrate_with_devise_case_insensitive_keys(identifier_param_value, entity)
+      puts "after params: #{identifier_param_value.inspect}"
 
       # The finder method should be compatible with all the model adapters,
       # namely ActiveRecord and Mongoid in all their supported versions.
