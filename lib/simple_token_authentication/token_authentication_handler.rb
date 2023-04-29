@@ -30,10 +30,8 @@ module SimpleTokenAuthentication
     def authenticate_entity_from_token!(entity)
       # puts "authenticate_entity_from_token: #{entity.inspect}"
       token = entity.get_token_from_params_or_headers(self)
-      puts "da token: #{token}"
       record = find_record_from_identifier(entity, token)
-      puts "record: #{record.inspect}, entity: #{entity.inspect}, token_comparator: #{token_comparator.inspect}"
-      if token_correct?(record, entity, token_comparator)
+      if !record.nil? && token_correct?(record, entity, token_comparator)
         perform_sign_in!(record, sign_in_handler)
         after_successful_token_authentication if respond_to?(:after_successful_token_authentication, true)
       end
@@ -44,9 +42,7 @@ module SimpleTokenAuthentication
     end
 
     def token_correct?(record, entity, token_comparator)
-      puts "DA RECORD TOKEN: #{record.authentication_token}"
-      puts "da token: #{entity.get_token_from_params_or_headers(self)}"
-      record && token_comparator.compare(record.authentication_token,
+      !record.nil? && token_comparator.compare(record.authentication_token,
                                          entity.get_token_from_params_or_headers(self))
     end
 
@@ -60,15 +56,11 @@ module SimpleTokenAuthentication
 
     def find_record_from_identifier(entity, token)
       identifier_param_value = entity.get_identifier_from_params_or_headers(self).presence
-      puts "identifier_param_value: #{identifier_param_value.inspect}"
 
       identifier_param_value = integrate_with_devise_case_insensitive_keys(identifier_param_value, entity)
-      puts "after params: #{identifier_param_value.inspect}"
 
       # The finder method should be compatible with all the model adapters,
       # namely ActiveRecord and Mongoid in all their supported versions.
-      puts "entity.identifier: #{entity.identifier.inspect}"
-      puts "identifier_param_value: #{identifier_param_value.inspect}"
       identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value, :authentication_token => token)
     end
 
@@ -100,7 +92,7 @@ module SimpleTokenAuthentication
       #
       # Returns nothing.
       def handle_token_authentication_for(model, options = {})
-        puts "handle_token_authentication_for:::: options #{options.inspect}"
+        # puts "handle_token_authentication_for:::: options #{options.inspect}"
         model_alias = options[:as] || options['as']
         # puts "model: #{model.inspect}, model_alias: #{model_alias.inspect}"
         entity = entities_manager.find_or_create_entity(model, model_alias)
@@ -137,9 +129,6 @@ module SimpleTokenAuthentication
 
         method_name = "authenticate_#{entity.name_underscore}_from_token"
         method_name_bang = method_name + '!'
-
-        puts "method_name: #{method_name.inspect}"
-        puts "method_name_bang: #{method_name_bang.inspect}"
 
         class_eval do
           define_method method_name.to_sym do
