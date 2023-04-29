@@ -28,11 +28,9 @@ module SimpleTokenAuthentication
     end
 
     def authenticate_entity_from_token!(entity)
-      # puts "authenticate_entity_from_token: #{entity.inspect}"
-      token = entity.get_token_from_params_or_headers(self)
-      record = find_record_from_identifier(entity, token)
-      puts "record:: #{record.inspect}"
-      if !record.nil? && token_correct?(record, entity, token_comparator)
+      record = find_record_from_identifier(entity)
+
+      if token_correct?(record, entity, token_comparator)
         perform_sign_in!(record, sign_in_handler)
         after_successful_token_authentication if respond_to?(:after_successful_token_authentication, true)
       end
@@ -43,7 +41,7 @@ module SimpleTokenAuthentication
     end
 
     def token_correct?(record, entity, token_comparator)
-      !record.nil? && token_comparator.compare(record.authentication_token,
+      record && token_comparator.compare(record.authentication_token,
                                          entity.get_token_from_params_or_headers(self))
     end
 
@@ -55,16 +53,15 @@ module SimpleTokenAuthentication
       sign_in_handler.sign_in self, record, store: SimpleTokenAuthentication.sign_in_token
     end
 
-    def find_record_from_identifier(entity, token)
+    def find_record_from_identifier(entity)
       identifier_param_value = entity.get_identifier_from_params_or_headers(self).presence
 
       identifier_param_value = integrate_with_devise_case_insensitive_keys(identifier_param_value, entity)
-
+      token = entity.get_token_from_params_or_headers(self)
+      puts "token: #{token}"
       # The finder method should be compatible with all the model adapters,
       # namely ActiveRecord and Mongoid in all their supported versions.
-      puts "entity #{entity.inspect}"
-      puts "token: #{token.inspect}"
-      identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value, :authentication_token => token)
+      identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value, , :authentication_token => token)
     end
 
     # Private: Take benefit from Devise case-insensitive keys
@@ -95,13 +92,9 @@ module SimpleTokenAuthentication
       #
       # Returns nothing.
       def handle_token_authentication_for(model, options = {})
-        # puts "handle_token_authentication_for:::: options #{options.inspect}"
         model_alias = options[:as] || options['as']
-        # puts "model: #{model.inspect}, model_alias: #{model_alias.inspect}"
         entity = entities_manager.find_or_create_entity(model, model_alias)
-        # puts "entity: #{entity.inspect}, options: #{options.inspect}"
         options = SimpleTokenAuthentication.parse_options(options)
-        # puts "new options: #{options.inspect}"
         define_token_authentication_helpers_for(entity, fallback_handler(options))
         set_token_authentication_hooks(entity, options)
       end
