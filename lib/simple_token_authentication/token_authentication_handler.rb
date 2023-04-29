@@ -28,7 +28,7 @@ module SimpleTokenAuthentication
     end
 
     def authenticate_entity_from_token!(entity)
-      puts "authenticate_entity_from_token: #{entity.inspect}"
+      # puts "authenticate_entity_from_token: #{entity.inspect}"
       record = find_record_from_identifier(entity)
       puts "record: #{record.inspect}, entity: #{entity.inspect}, token_comparator: #{token_comparator.inspect}"
       if token_correct?(record, entity, token_comparator)
@@ -42,6 +42,8 @@ module SimpleTokenAuthentication
     end
 
     def token_correct?(record, entity, token_comparator)
+      puts "DA RECORD TOKEN: #{record.authentication_token}"
+      puts "da token: #{entity.get_token_from_params_or_headers(self)}"
       record && token_comparator.compare(record.authentication_token,
                                          entity.get_token_from_params_or_headers(self))
     end
@@ -94,11 +96,11 @@ module SimpleTokenAuthentication
       def handle_token_authentication_for(model, options = {})
         puts "handle_token_authentication_for:::: options #{options.inspect}"
         model_alias = options[:as] || options['as']
-        puts "model: #{model.inspect}, model_alias: #{model_alias.inspect}"
+        # puts "model: #{model.inspect}, model_alias: #{model_alias.inspect}"
         entity = entities_manager.find_or_create_entity(model, model_alias)
-        puts "entity: #{entity.inspect}, options: #{options.inspect}"
+        # puts "entity: #{entity.inspect}, options: #{options.inspect}"
         options = SimpleTokenAuthentication.parse_options(options)
-        puts "new options: #{options.inspect}"
+        # puts "new options: #{options.inspect}"
         define_token_authentication_helpers_for(entity, fallback_handler(options))
         set_token_authentication_hooks(entity, options)
       end
