@@ -31,6 +31,7 @@ module SimpleTokenAuthentication
       # puts "authenticate_entity_from_token: #{entity.inspect}"
       token = entity.get_token_from_params_or_headers(self)
       record = find_record_from_identifier(entity, token)
+      puts "record:: #{record.inspect}"
       if !record.nil? && token_correct?(record, entity, token_comparator)
         perform_sign_in!(record, sign_in_handler)
         after_successful_token_authentication if respond_to?(:after_successful_token_authentication, true)
@@ -61,6 +62,8 @@ module SimpleTokenAuthentication
 
       # The finder method should be compatible with all the model adapters,
       # namely ActiveRecord and Mongoid in all their supported versions.
+      puts "entity #{entity.inspect}"
+      puts "token: #{token.inspect}"
       identifier_param_value && entity.model.find_for_authentication(entity.identifier => identifier_param_value, :authentication_token => token)
     end
 
